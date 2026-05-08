@@ -13,7 +13,6 @@ ipcMain.handle('getAppSettings', () => {
 
 ipcMain.handle('updateAppSettings', (_event, _settings) => {
   Object.assign(settings, _settings)
-  // Persist to config file (only config fields, not UI-only fields like opacity)
   const configFields: AppConfig = {
     apiProvider: settings.apiProvider,
     apiBaseURL: settings.apiBaseURL,
@@ -22,7 +21,8 @@ ipcMain.handle('updateAppSettings', (_event, _settings) => {
     model: settings.model,
     codeLanguage: settings.codeLanguage,
     customPrompt: settings.customPrompt,
-    proxyUrl: settings.proxyUrl
+    proxyUrl: settings.proxyUrl,
+    autoCheckUpdate: settings.autoCheckUpdate
   }
   saveConfig(configFields)
 })

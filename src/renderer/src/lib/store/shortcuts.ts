@@ -58,11 +58,20 @@ const defaultShortcuts: Record<string, Omit<Shortcut, 'defaultKey'>> = {
   },
   pageUp: { action: 'pageUp', key: 'CommandOrControl+J', category: 'Navigation' },
   pageDown: { action: 'pageDown', key: 'CommandOrControl+K', category: 'Navigation' },
-  openMemoryCards: {
-    action: 'openMemoryCards',
+  backToCoderPage: {
+    action: 'backToCoderPage',
     key: 'CommandOrControl+R',
     category: 'Navigation'
   },
+  switchToCard1: { action: 'switchToCard1', key: 'CommandOrControl+1', category: 'Memory Cards' },
+  switchToCard2: { action: 'switchToCard2', key: 'CommandOrControl+2', category: 'Memory Cards' },
+  switchToCard3: { action: 'switchToCard3', key: 'CommandOrControl+3', category: 'Memory Cards' },
+  switchToCard4: { action: 'switchToCard4', key: 'CommandOrControl+4', category: 'Memory Cards' },
+  switchToCard5: { action: 'switchToCard5', key: 'CommandOrControl+5', category: 'Memory Cards' },
+  switchToCard6: { action: 'switchToCard6', key: 'CommandOrControl+6', category: 'Memory Cards' },
+  switchToCard7: { action: 'switchToCard7', key: 'CommandOrControl+7', category: 'Memory Cards' },
+  switchToCard8: { action: 'switchToCard8', key: 'CommandOrControl+8', category: 'Memory Cards' },
+  switchToCard9: { action: 'switchToCard9', key: 'CommandOrControl+9', category: 'Memory Cards' },
   moveMainWindowUp: {
     action: 'moveMainWindowUp',
     key: 'CommandOrControl+Up',
@@ -118,7 +127,7 @@ export const useShortcutsStore = create<ShortcutsStore>()(
     }),
     {
       name: 'dreamcode-shortcuts',
-      version: 3,
+      version: 4,
       migrate: (state: unknown) => {
         if (!isPersistedShortcutsState(state) || !state.shortcuts) return state as ShortcutsStore
         // Merge in any new default shortcuts that are missing

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import ShortcutRenderer from '@/components/ShortcutRenderer'
 import { isModifierKey, getShortcutAccelerator } from '@/lib/utils/keyboard'
 import { useShortcutsStore } from '@/lib/store/shortcuts'
+import { useMemoryCardsStore } from '@/lib/store/memory-cards'
 
 const ShortcutsContext = createContext<{
   recordingAction: string | null
@@ -15,6 +16,7 @@ const ShortcutsContext = createContext<{
 
 export function CustomShortcuts() {
   const { shortcuts, updateShortcut } = useShortcutsStore()
+  const { cards } = useMemoryCardsStore()
   const [recordingAction, setRecordingAction] = useState<string | null>(null)
 
   const onShortcutChange = useCallback(
@@ -34,7 +36,6 @@ export function CustomShortcuts() {
 
       if (isModifierKey(e.code)) return
       const accelerator = getShortcutAccelerator(e)
-      // User press escape to cancel recording.
       if (e.code === 'Escape' && !accelerator) {
         setRecordingAction(null)
       }
@@ -87,7 +88,22 @@ export function CustomShortcuts() {
           <h3 className="text-sm text-gray-500 dark:text-gray-400">页面导航</h3>
           <Shortcut label="向上翻页" shortcut="pageUp" />
           <Shortcut label="向下翻页" shortcut="pageDown" />
-          <Shortcut label="切换到记忆卡片页面" shortcut="openMemoryCards" />
+          <Shortcut label="返回主页面" shortcut="backToCoderPage" />
+        </div>
+
+        {/* Memory Cards */}
+        <div className="space-y-2">
+          <h3 className="text-sm text-gray-500 dark:text-gray-400">
+            记忆卡片
+            <span className="ml-2 text-xs font-light">点击快捷键可自定义绑定</span>
+          </h3>
+          {cards.slice(0, 9).map((card, index) => (
+            <Shortcut
+              key={card.id}
+              label={card.title || `卡片 ${index + 1}`}
+              shortcut={`switchToCard${index + 1}`}
+            />
+          ))}
         </div>
 
         {/* Window Movement */}

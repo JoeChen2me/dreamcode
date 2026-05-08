@@ -13,6 +13,7 @@ export function Shortcuts() {
       <ShortcutItemGroup category="Window Management" />
       <ShortcutItemGroup category="Screenshot & AI" />
       <ShortcutItemGroup category="Navigation" />
+      <ShortcutItemGroup category="Memory Cards" />
       <ShortcutItemGroup category="Window Movement" />
     </HelpSection>
   )
@@ -48,6 +49,7 @@ const getCategoryName = (category: string) => {
     'Window Management': '窗口管理',
     'Screenshot & AI': '截图与AI',
     Navigation: '页面导航',
+    'Memory Cards': '记忆卡片',
     'Window Movement': '窗口移动'
   }
   return categoryMap[category] || category
@@ -62,7 +64,16 @@ const getShortcutDescription = (action: string) => {
     stopSolutionStream: '停止生成',
     pageUp: '向上翻页',
     pageDown: '向下翻页',
-    openMemoryCards: '切换到记忆卡片页面',
+    backToCoderPage: '返回主解题页',
+    switchToCard1: '切换到卡片 1',
+    switchToCard2: '切换到卡片 2',
+    switchToCard3: '切换到卡片 3',
+    switchToCard4: '切换到卡片 4',
+    switchToCard5: '切换到卡片 5',
+    switchToCard6: '切换到卡片 6',
+    switchToCard7: '切换到卡片 7',
+    switchToCard8: '切换到卡片 8',
+    switchToCard9: '切换到卡片 9',
     moveMainWindowUp: '向上移动窗口',
     moveMainWindowDown: '向下移动窗口',
     moveMainWindowLeft: '向左移动窗口',

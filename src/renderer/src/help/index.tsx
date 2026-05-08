@@ -1,20 +1,44 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
-import {
-  ArrowLeft,
-  Lightbulb,
-  MessageCircle,
-  Camera,
-  PictureInPicture2,
-  EyeOff,
-  Info
-} from 'lucide-react'
+import { ArrowLeft, Info, RefreshCw, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import ShortcutRenderer from '@/components/ShortcutRenderer'
+import { Checkbox } from '@/components/ui/checkbox'
 import { HelpSection } from './components'
 import { Shortcuts } from './Shortcuts'
-import { FAQ } from './FAQ'
+import { useSettingsStore } from '@/lib/store/settings'
 
 export default function HelpPage() {
+  const [checking, setChecking] = useState(false)
+  const [hasUpdate, setHasUpdate] = useState(false)
+  const [updateResult, setUpdateResult] = useState<string | null>(null)
+  const [appVersion, setAppVersion] = useState<string>('')
+  const { autoCheckUpdate, updateSetting } = useSettingsStore()
+
+  useEffect(() => {
+    window.api.getAppVersion().then((v: string) => setAppVersion(v))
+  }, [])
+
+  const handleCheckUpdate = async () => {
+    setChecking(true)
+    setUpdateResult(null)
+    setHasUpdate(false)
+    try {
+      const result = await window.api.checkForUpdate()
+      if (result.hasUpdate) {
+        setHasUpdate(true)
+        setUpdateResult(`发现新版本 v${result.latestVersion}`)
+      } else {
+        setHasUpdate(false)
+        setUpdateResult('当前已是最新版本')
+      }
+    } catch {
+      setHasUpdate(false)
+      setUpdateResult('检查更新失败，请稍后重试')
+    } finally {
+      setChecking(false)
+    }
+  }
+
   return (
     <>
       {/* Header */}
@@ -26,94 +50,76 @@ export default function HelpPage() {
             </Link>
           </Button>
         </div>
-        <h1 className="flex-1 text-center font-medium select-none pr-7">帮助中心</h1>
+        <h1 className="flex-1 text-center font-medium select-none pr-7">关于</h1>
       </div>
 
-      {/* Help Content */}
+      {/* Content */}
       <div id="app-content" className="flex flex-col gap-4 p-8">
-        {/* Introduction */}
-        <HelpSection Icon={Info} title="简介">
-          <p className="text-gray-700 dark:text-gray-300">
-            欢迎使用 DreamCode！针对 编码笔试 / 面试
-            场景，该工具可以帮助您快速截图，分析屏幕内容，并给出解题建议。 您可以访问本项目{' '}
-            <a
-              href="https://github.com/dream-rec/dreamcode/wiki"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 text-blue-600 hover:underline"
-            >
-              GitHub Wiki
-            </a>{' '}
-            获取更多帮助信息（如隐身相关配置、API Key 申请等）。
-          </p>
-          <div className="bg-gray-700/10 dark:bg-gray-300/10 rounded-lg p-4">
-            <h3 className="font-semibold mb-2">主要功能：</h3>
-            <ul className="space-y-1 text-gray-700 dark:text-gray-300 list-disc list-inside">
-              <li className="flex gap-2">
-                <Camera className="h-6 w-4" />
-                <span>通过快捷键快速截图，并生成解题建议。</span>
-              </li>
-              <li className="flex gap-2">
-                <EyeOff className="h-6 w-4" />
-                <span>
-                  工具窗口在共享屏幕时自动隐藏(对方不可见)(小部分会议软件可能需要配置才能隐藏)。
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <PictureInPicture2 className="h-6 w-4" />
-                <span>
-                  工具窗口置顶半透明显示，您在做题时光标始终停留在做题区域，不会导致原页面失焦。
-                </span>
-              </li>
-            </ul>
-          </div>
-        </HelpSection>
-
-        {/* Quick Start */}
-        <HelpSection Icon={Lightbulb} title="快速开始">
-          <div className="border border-gray-400 dark:border-gray-600 rounded-lg p-4">
-            <h3 className="font-semibold mb-2">1. 截取屏幕截图</h3>
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              当您需要分析某个问题时，按下快捷键{' '}
-              <ShortcutRenderer shortcut="Alt+Enter" className="text-xs mx-1" />
-              截取当前屏幕。截图会立即显示在应用中。
-            </p>
-          </div>
-          <div className="border border-gray-400 dark:border-gray-600 rounded-lg p-4">
-            <h3 className="font-semibold mb-2">2. 查看结果</h3>
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              截图完成后，系统会自动分析内容并提供相关的解题思路和代码。
-            </p>
+        {/* About */}
+        <HelpSection Icon={Info} title="关于 DreamCode">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-700 dark:text-gray-300">版本</span>
+              <span className="text-sm font-mono text-gray-800 dark:text-gray-200">v{appVersion}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-700 dark:text-gray-300">开源协议</span>
+              <span className="text-sm text-gray-800 dark:text-gray-200">CC BY-NC 4.0</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-700 dark:text-gray-300">项目地址</span>
+              <button
+                onClick={() => window.api.openGitHubRepo()}
+                className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+              >
+                github.com/dream-rec/dreamcode
+                <ExternalLink className="h-3 w-3" />
+              </button>
+            </div>
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCheckUpdate}
+                    disabled={checking}
+                    className="h-8"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${checking ? 'animate-spin' : ''}`} />
+                    {checking ? '检查中...' : '检查更新'}
+                  </Button>
+                  {updateResult && (
+                    <span className="text-xs text-gray-600 dark:text-gray-400">{updateResult}</span>
+                  )}
+                </div>
+                {hasUpdate && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => window.api.openGitHubRelease()}
+                    className="h-8"
+                  >
+                    前往下载
+                  </Button>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="auto-check-update"
+                  checked={autoCheckUpdate}
+                  onCheckedChange={(checked) => updateSetting('autoCheckUpdate', !!checked)}
+                />
+                <label htmlFor="auto-check-update" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                  启动时自动检查更新
+                </label>
+              </div>
+            </div>
           </div>
         </HelpSection>
 
         {/* Keyboard Shortcuts */}
         <Shortcuts />
-
-        {/* FAQ */}
-        <FAQ />
-
-        {/* Contact Support */}
-        <HelpSection Icon={MessageCircle} title="联系支持">
-          <p className="text-gray-700 dark:text-gray-300">如果您遇到问题或有建议，请通过以下方式联系我们：</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div className="border border-gray-400 dark:border-gray-600 rounded-lg p-4">
-              <h3 className="font-semibold mb-2 ">GitHub Issues</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                在{' '}
-                <a
-                  href="https://github.com/dream-rec/dreamcode/issues"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-blue-600 hover:underline"
-                >
-                  GitHub Issues
-                </a>{' '}
-                上提交问题报告和功能请求
-              </p>
-            </div>
-          </div>
-        </HelpSection>
       </div>
     </>
   )

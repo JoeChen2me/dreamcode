@@ -508,7 +508,59 @@ const callbacks: Record<string, () => void> = {
   openMemoryCards: () => {
     const mainWindow = global.mainWindow
     if (!mainWindow || mainWindow.isDestroyed()) return
-    mainWindow.webContents.send('navigate-memory-cards')
+    mainWindow.webContents.send('navigate-memory-card', 0)
+  },
+
+  backToCoderPage: () => {
+    const mainWindow = global.mainWindow
+    if (!mainWindow || mainWindow.isDestroyed()) return
+    mainWindow.webContents.send('navigate-coder-page')
+  },
+
+  switchToCard1: () => {
+    const mainWindow = global.mainWindow
+    if (!mainWindow || mainWindow.isDestroyed()) return
+    mainWindow.webContents.send('navigate-memory-card', 0)
+  },
+  switchToCard2: () => {
+    const mainWindow = global.mainWindow
+    if (!mainWindow || mainWindow.isDestroyed()) return
+    mainWindow.webContents.send('navigate-memory-card', 1)
+  },
+  switchToCard3: () => {
+    const mainWindow = global.mainWindow
+    if (!mainWindow || mainWindow.isDestroyed()) return
+    mainWindow.webContents.send('navigate-memory-card', 2)
+  },
+  switchToCard4: () => {
+    const mainWindow = global.mainWindow
+    if (!mainWindow || mainWindow.isDestroyed()) return
+    mainWindow.webContents.send('navigate-memory-card', 3)
+  },
+  switchToCard5: () => {
+    const mainWindow = global.mainWindow
+    if (!mainWindow || mainWindow.isDestroyed()) return
+    mainWindow.webContents.send('navigate-memory-card', 4)
+  },
+  switchToCard6: () => {
+    const mainWindow = global.mainWindow
+    if (!mainWindow || mainWindow.isDestroyed()) return
+    mainWindow.webContents.send('navigate-memory-card', 5)
+  },
+  switchToCard7: () => {
+    const mainWindow = global.mainWindow
+    if (!mainWindow || mainWindow.isDestroyed()) return
+    mainWindow.webContents.send('navigate-memory-card', 6)
+  },
+  switchToCard8: () => {
+    const mainWindow = global.mainWindow
+    if (!mainWindow || mainWindow.isDestroyed()) return
+    mainWindow.webContents.send('navigate-memory-card', 7)
+  },
+  switchToCard9: () => {
+    const mainWindow = global.mainWindow
+    if (!mainWindow || mainWindow.isDestroyed()) return
+    mainWindow.webContents.send('navigate-memory-card', 8)
   },
 
   moveMainWindowUp: () => {

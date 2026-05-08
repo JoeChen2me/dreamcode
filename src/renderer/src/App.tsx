@@ -3,10 +3,11 @@ import { HashRouter, Routes, Route, useNavigate } from 'react-router'
 import { Toaster } from 'sonner'
 import CoderPage from '@/coder'
 import SettingsPage from '@/settings'
-import HelpPage from '@/help'
+import AboutPage from '@/help'
 import MemoryCardsPage from '@/memory-cards'
 import { useSettingsStore } from '@/lib/store/settings'
 import { useShortcutsStore } from '@/lib/store/shortcuts'
+import { useMemoryCardsStore } from '@/lib/store/memory-cards'
 import { getCloneableFields } from '@/lib/utils'
 
 export default function App() {
@@ -69,7 +70,7 @@ export default function App() {
         <Routes>
           <Route index element={<CoderPage />} />
           <Route path="settings" element={<SettingsPage />} />
-          <Route path="help" element={<HelpPage />} />
+          <Route path="about" element={<AboutPage />} />
           <Route path="memory-cards" element={<MemoryCardsPage />} />
         </Routes>
       </HashRouter>
@@ -81,17 +82,26 @@ export default function App() {
 
 function ShortcutNavigator() {
   const navigate = useNavigate()
+  const { cards, selectCard } = useMemoryCardsStore()
 
   useEffect(() => {
-    window.api.onNavigateMemoryCards(() => {
-      if (window.location.hash.endsWith('/memory-cards')) {
-        navigate('/')
-      } else {
+    window.api.onNavigateMemoryCard((index: number) => {
+      if (index < cards.length) {
+        selectCard(cards[index].id)
         navigate('/memory-cards')
       }
     })
     return () => {
-      window.api.removeNavigateMemoryCardsListener()
+      window.api.removeNavigateMemoryCardListener()
+    }
+  }, [navigate, cards, selectCard])
+
+  useEffect(() => {
+    window.api.onNavigateCoderPage(() => {
+      navigate('/')
+    })
+    return () => {
+      window.api.removeNavigateCoderPageListener()
     }
   }, [navigate])
 

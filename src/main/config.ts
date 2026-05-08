@@ -11,6 +11,7 @@ export interface AppConfig {
   codeLanguage: string
   customPrompt: string
   proxyUrl: string
+  autoCheckUpdate: boolean
 }
 
 const defaultConfig: AppConfig = {
@@ -21,7 +22,8 @@ const defaultConfig: AppConfig = {
   model: '',
   codeLanguage: 'typescript',
   customPrompt: '',
-  proxyUrl: ''
+  proxyUrl: '',
+  autoCheckUpdate: true
 }
 
 function getConfigPath(): string {

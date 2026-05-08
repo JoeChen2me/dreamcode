@@ -14,6 +14,7 @@ interface Settings {
   opacity: number
   fontSize: number
   codeLanguage: string
+  autoCheckUpdate: boolean
 }
 
 interface SettingsStore extends Settings {
@@ -33,7 +34,8 @@ const defaultSettings: Settings = {
 
   theme: 'light',
   opacity: 0.8,
-  fontSize: 14
+  fontSize: 14,
+  autoCheckUpdate: true
 }
 
 export const useSettingsStore = create<SettingsStore>()(

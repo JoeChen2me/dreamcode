@@ -1,4 +1,4 @@
-import { SettingsIcon, HelpCircle, Sun, Moon, IdCard } from 'lucide-react'
+import { SettingsIcon, Sun, Moon, StickyNote, Github } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { useAppStore } from '@/lib/store/app'
@@ -20,10 +20,12 @@ export function AppHeader() {
         />
         <button
           className="w-3 h-3 rounded-full bg-[#febc2e] hover:brightness-90 transition-all"
+          onClick={() => window.api.minimizeWindow()}
           title="最小化"
         />
         <button
           className="w-3 h-3 rounded-full bg-[#28c840] hover:brightness-90 transition-all"
+          onClick={() => window.api.maximizeWindow()}
           title="最大化"
         />
       </div>
@@ -39,7 +41,7 @@ export function AppHeader() {
           onClick={() => navigate('/memory-cards')}
           title="记忆卡片"
         >
-          <IdCard className="h-4 w-4" />
+          <StickyNote className="h-4 w-4" />
         </Button>
         <Button
           variant="ghost"
@@ -59,9 +61,10 @@ export function AppHeader() {
         <Button
           variant="ghost"
           className="size-7 cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 rounded-md"
-          onClick={() => navigate('/help')}
+          onClick={() => navigate('/about')}
+          title="关于"
         >
-          <HelpCircle className="h-4 w-4" />
+          <Github className="h-4 w-4" />
         </Button>
       </div>
     </div>

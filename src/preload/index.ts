@@ -5,6 +5,16 @@ import type { AppState } from '../main/state'
 
 // Custom APIs for renderer
 const api = {
+  // Window controls
+  minimizeWindow: () => ipcRenderer.invoke('minimizeWindow'),
+  maximizeWindow: () => ipcRenderer.invoke('maximizeWindow'),
+
+  // App info & updates
+  getAppVersion: () => ipcRenderer.invoke('getAppVersion'),
+  checkForUpdate: () => ipcRenderer.invoke('checkForUpdate'),
+  openGitHubRelease: () => ipcRenderer.invoke('openGitHubRelease'),
+  openGitHubRepo: () => ipcRenderer.invoke('openGitHubRepo'),
+
   // Get app settings
   getAppSettings: () => ipcRenderer.invoke('getAppSettings'),
   // Update app settings
@@ -113,12 +123,22 @@ const api = {
     ipcRenderer.removeAllListeners('scroll-page-down')
   },
 
-  // Navigate to memory cards page
-  onNavigateMemoryCards: (callback: () => void) => {
-    ipcRenderer.on('navigate-memory-cards', callback)
+  // Navigate to memory card by index
+  onNavigateMemoryCard: (callback: (index: number) => void) => {
+    ipcRenderer.on('navigate-memory-card', (_event, index) => {
+      callback(index)
+    })
   },
-  removeNavigateMemoryCardsListener: () => {
-    ipcRenderer.removeAllListeners('navigate-memory-cards')
+  removeNavigateMemoryCardListener: () => {
+    ipcRenderer.removeAllListeners('navigate-memory-card')
+  },
+
+  // Navigate back to coder page
+  onNavigateCoderPage: (callback: () => void) => {
+    ipcRenderer.on('navigate-coder-page', callback)
+  },
+  removeNavigateCoderPageListener: () => {
+    ipcRenderer.removeAllListeners('navigate-coder-page')
   },
 
   // AI loading events
