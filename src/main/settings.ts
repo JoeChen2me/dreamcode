@@ -11,8 +11,22 @@ ipcMain.handle('getAppSettings', () => {
   return settings
 })
 
-ipcMain.handle('updateAppSettings', (_event, _settings) => {
-  Object.assign(settings, _settings)
+// Known mutable fields that the renderer is allowed to set
+const MUTABLE_FIELDS: (keyof AppSettings)[] = [
+  'apiProvider', 'apiBaseURL', 'apiKey', 'extraHeaders', 'model',
+  'codeLanguage', 'customPrompt', 'proxyUrl', 'autoCheckUpdate',
+  'screenshotMode', 'screenshotRegion', 'opacity'
+]
+
+ipcMain.handle('updateAppSettings', (_event, _settings: Record<string, unknown>) => {
+  // Only copy known fields — prevent arbitrary property injection
+  const filtered: Partial<AppSettings> = {}
+  for (const key of MUTABLE_FIELDS) {
+    if (key in _settings) {
+      ;(filtered as Record<string, unknown>)[key] = _settings[key]
+    }
+  }
+  Object.assign(settings, filtered)
   const configFields: AppConfig = {
     apiProvider: settings.apiProvider,
     apiBaseURL: settings.apiBaseURL,
@@ -22,7 +36,9 @@ ipcMain.handle('updateAppSettings', (_event, _settings) => {
     codeLanguage: settings.codeLanguage,
     customPrompt: settings.customPrompt,
     proxyUrl: settings.proxyUrl,
-    autoCheckUpdate: settings.autoCheckUpdate
+    autoCheckUpdate: settings.autoCheckUpdate,
+    screenshotMode: settings.screenshotMode,
+    screenshotRegion: settings.screenshotRegion
   }
   saveConfig(configFields)
 })

@@ -91,6 +91,11 @@ const defaultShortcuts: Record<string, Omit<Shortcut, 'defaultKey'>> = {
     action: 'moveMainWindowRight',
     key: 'CommandOrControl+Right',
     category: 'Window Movement'
+  },
+  setScreenshotRegion: {
+    action: 'setScreenshotRegion',
+    key: 'Alt+R',
+    category: 'Screenshot & AI'
   }
 }
 

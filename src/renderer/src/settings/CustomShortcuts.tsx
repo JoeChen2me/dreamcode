@@ -81,6 +81,11 @@ export function CustomShortcuts() {
             shortcut="appendScreenshot"
           />
           <Shortcut label="停止生成" shortcut="stopSolutionStream" />
+          <Shortcut
+            label="设置截图区域"
+            description="拖拽屏幕选取自定义截图范围，松开鼠标确认，Esc取消"
+            shortcut="setScreenshotRegion"
+          />
         </div>
 
         {/* Navigation */}

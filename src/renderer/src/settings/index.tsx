@@ -11,13 +11,16 @@ import {
   EyeOff,
   Keyboard,
   Save,
-  Globe
+  Globe,
+  ScanLine,
+  Crosshair
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { useSettingsStore } from '@/lib/store/settings'
+import { useShortcutsStore } from '@/lib/store/shortcuts'
 import { getCloneableFields } from '@/lib/utils'
 import { SelectLanguage } from './SelectLanguage'
 import { CustomShortcuts, ResetDefaultShortcuts } from './CustomShortcuts'
@@ -37,6 +40,8 @@ export default function SettingsPage() {
   const [codeLanguage, setCodeLanguage] = useState(settingsStore.codeLanguage)
   const [opacity, setOpacity] = useState(settingsStore.opacity)
   const [fontSize, setFontSize] = useState(settingsStore.fontSize)
+  const [screenshotMode, setScreenshotMode] = useState(settingsStore.screenshotMode)
+  const [currentRegion, setCurrentRegion] = useState<{ x: number; y: number; width: number; height: number } | null>(null)
 
   const [showApiKey, setShowApiKey] = useState(false)
   const [enableCustomPrompt, setEnableCustomPrompt] = useState(customPrompt.trim().length > 0)
@@ -45,6 +50,19 @@ export default function SettingsPage() {
   useEffect(() => {
     document.body.style.opacity = opacity.toString()
   }, [opacity])
+
+  // Listen for region updates and fetch current region on mount
+  useEffect(() => {
+    window.api.getAppSettings().then((s) => {
+      if (s.screenshotRegion) setCurrentRegion(s.screenshotRegion)
+    })
+    window.api.onRegionUpdated((region) => {
+      setCurrentRegion(region)
+    })
+    return () => {
+      window.api.removeRegionUpdatedListener()
+    }
+  }, [])
 
   // Restore store opacity on unmount (store is unchanged if not saved)
   useEffect(() => {
@@ -71,7 +89,8 @@ export default function SettingsPage() {
       proxyUrl,
       codeLanguage,
       opacity,
-      fontSize
+      fontSize,
+      screenshotMode
     }
     settingsStore.syncSettings(newSettings)
     window.api.updateAppSettings(getCloneableFields({ ...settingsStore, ...newSettings }))
@@ -352,6 +371,59 @@ export default function SettingsPage() {
             <ResetDefaultShortcuts />
           </h2>
           <CustomShortcuts />
+        </div>
+
+        {/* Screenshot Mode */}
+        <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50 dark:border-gray-700/50">
+          <h2 className="text-lg font-semibold mb-4 flex items-center">
+            <Crosshair className="h-5 w-5 mr-2" />
+            截图区域设置
+          </h2>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">
+                局部截屏模式
+                <span className="ml-2 text-xs font-light">开启后每次截图仅截入选定区域，关闭则截取全屏</span>
+              </label>
+              <Switch
+                className="scale-y-90"
+                checked={screenshotMode === 'region'}
+                onCheckedChange={(checked) => setScreenshotMode(checked ? 'region' : 'fullscreen')}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium">截屏区域</label>
+                <p className="text-xs font-light mt-0.5">
+                  点击下方按钮或按 <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">{useShortcutsStore.getState().shortcuts.setScreenshotRegion?.key ?? 'Alt+R'}</kbd> 拖拽选取
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  const region = await window.api.startRegionSelection()
+                  if (region) {
+                    toast.success(`截图区域已设置: ${region.x},${region.y} ${region.width}×${region.height}`)
+                  } else {
+                    toast.info('已取消区域选择')
+                  }
+                }}
+              >
+                <ScanLine className="h-4 w-4 mr-1.5" />
+                选择截屏区域
+              </Button>
+            </div>
+            {screenshotMode === 'region' && currentRegion && (
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium">当前截屏区域</label>
+                <span className="text-sm text-gray-600 dark:text-gray-300 font-mono">
+                  {currentRegion.x}, {currentRegion.y} — {currentRegion.width}x{currentRegion.height}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Privacy Settings */}

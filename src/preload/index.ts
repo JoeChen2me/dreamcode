@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer, webFrame } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import type { AppSettings } from '../main/settings'
 import type { AppState } from '../main/state'
+import type { ScreenshotRegion } from '../main/config'
 
 // Lock renderer zoom to prevent scaling drift from display changes
 webFrame.setZoomFactor(1)
@@ -166,6 +167,15 @@ const api = {
   },
   removeSolutionClearListener: () => {
     ipcRenderer.removeAllListeners('solution-clear')
+  },
+
+  // Region selection for screenshot
+  startRegionSelection: () => ipcRenderer.invoke('startRegionSelection'),
+  onRegionUpdated: (callback: (region: ScreenshotRegion) => void) => {
+    ipcRenderer.on('region-updated', (_event, region) => callback(region))
+  },
+  removeRegionUpdatedListener: () => {
+    ipcRenderer.removeAllListeners('region-updated')
   }
 }
 

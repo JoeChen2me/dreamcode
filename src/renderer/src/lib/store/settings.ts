@@ -15,6 +15,7 @@ interface Settings {
   fontSize: number
   codeLanguage: string
   autoCheckUpdate: boolean
+  screenshotMode: 'fullscreen' | 'region'
 }
 
 interface SettingsStore extends Settings {
@@ -35,7 +36,8 @@ const defaultSettings: Settings = {
   theme: 'light',
   opacity: 0.8,
   fontSize: 14,
-  autoCheckUpdate: true
+  autoCheckUpdate: true,
+  screenshotMode: 'fullscreen'
 }
 
 export const useSettingsStore = create<SettingsStore>()(

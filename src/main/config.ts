@@ -2,6 +2,13 @@ import { app } from 'electron'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 
+export interface ScreenshotRegion {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
 export interface AppConfig {
   apiProvider: 'openai' | 'anthropic'
   apiBaseURL: string
@@ -12,6 +19,8 @@ export interface AppConfig {
   customPrompt: string
   proxyUrl: string
   autoCheckUpdate: boolean
+  screenshotMode: 'fullscreen' | 'region'
+  screenshotRegion: ScreenshotRegion | null
 }
 
 const defaultConfig: AppConfig = {
@@ -23,7 +32,9 @@ const defaultConfig: AppConfig = {
   codeLanguage: 'typescript',
   customPrompt: '',
   proxyUrl: '',
-  autoCheckUpdate: true
+  autoCheckUpdate: true,
+  screenshotMode: 'fullscreen',
+  screenshotRegion: null
 }
 
 function getConfigPath(): string {

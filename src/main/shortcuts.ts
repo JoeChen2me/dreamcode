@@ -5,6 +5,7 @@ import { takeScreenshot } from './take-screenshot'
 import { getSolutionStream, getFollowUpStream, getGeneralStream } from './ai'
 import { state } from './state'
 import { settings } from './settings'
+import { startRegionSelection } from './region-overlay'
 
 /**
  * Extract meaningful error message from API errors
@@ -253,7 +254,8 @@ const callbacks: Record<string, () => void> = {
 
     abortCurrentStream('new-request')
     let loadingStarted = false
-    const screenshotData = await takeScreenshot()
+    const region = settings.screenshotMode === 'region' ? settings.screenshotRegion : null
+    const screenshotData = await takeScreenshot(region)
     if (screenshotData && mainWindow && !mainWindow.isDestroyed()) {
       conversationMessages = [
         {
@@ -369,7 +371,8 @@ const callbacks: Record<string, () => void> = {
     abortCurrentStream('new-request')
     let loadingStarted = false
 
-    const screenshotData = await takeScreenshot()
+    const region = settings.screenshotMode === 'region' ? settings.screenshotRegion : null
+    const screenshotData = await takeScreenshot(region)
     if (screenshotData && mainWindow && !mainWindow.isDestroyed()) {
       // Append new image message to conversation
       const newUserMessage: ModelMessage = {
@@ -589,6 +592,16 @@ const callbacks: Record<string, () => void> = {
     if (!mainWindow || mainWindow.isDestroyed()) return
     const [x, y] = mainWindow.getPosition()
     mainWindow.setPosition(x + MOVE_STEP, y)
+  },
+
+  setScreenshotRegion: async () => {
+    const mainWindow = global.mainWindow
+    if (!mainWindow || mainWindow.isDestroyed() || !state.inCoderPage) return
+    const region = await startRegionSelection()
+    if (region) {
+      settings.screenshotRegion = region
+      mainWindow.webContents.send('region-updated', region)
+    }
   }
 }
 
