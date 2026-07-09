@@ -5,7 +5,7 @@ import { settings } from './settings'
 
 let selecting = false
 
-function buildOverlayHTML(displayX: number, displayY: number): string {
+function buildOverlayHTML(): string {
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -29,67 +29,88 @@ function buildOverlayHTML(displayX: number, displayY: number): string {
 <div class="selection" id="sel"></div>
 <div class="bar" id="bar">拖拽选择截图区域 · Esc 取消 · 松开鼠标确认</div>
 <script>
-  var sx = 0, sy = 0, dragging = false, minSize = 8;
-  var sel = document.getElementById('sel');
-  var bar = document.getElementById('bar');
+  (function() {
+    var sx_client = 0, sy_client = 0;
+    var sx_screen = 0, sy_screen = 0;
+    var dragging = false, minSize = 8;
+    var sel = document.getElementById('sel');
+    var bar = document.getElementById('bar');
 
-  document.addEventListener('mousedown', function(e) {
-    sx = e.screenX; sy = e.screenY;
-    dragging = true;
-    sel.style.display = 'block';
-    update(e);
-  });
+    document.addEventListener('mousedown', function(e) {
+      sx_client = e.clientX; sy_client = e.clientY;
+      sx_screen = e.screenX; sy_screen = e.screenY;
+      dragging = true;
+      sel.style.display = 'block';
+      update(e);
+    });
 
-  document.addEventListener('mousemove', function(e) {
-    if (!dragging) return;
-    update(e);
-  });
+    document.addEventListener('mousemove', function(e) {
+      if (!dragging) return;
+      update(e);
+    });
 
-  function update(e) {
-    var x = Math.min(sx, e.screenX);
-    var y = Math.min(sy, e.screenY);
-    var w = Math.abs(e.screenX - sx);
-    var h = Math.abs(e.screenY - sy);
-    sel.style.left = (x - ${displayX}) + 'px';
-    sel.style.top = (y - ${displayY}) + 'px';
-    sel.style.width = w + 'px';
-    sel.style.height = h + 'px';
-    bar.textContent = w + ' × ' + h + '  |  松开确认 · Esc 取消';
-  }
+    function update(e) {
+      var cx = Math.min(sx_client, e.clientX);
+      var cy = Math.min(sy_client, e.clientY);
+      var cw = Math.abs(e.clientX - sx_client);
+      var ch = Math.abs(e.clientY - sy_client);
+      sel.style.left = cx + 'px';
+      sel.style.top = cy + 'px';
+      sel.style.width = cw + 'px';
+      sel.style.height = ch + 'px';
 
-  document.addEventListener('mouseup', function(e) {
-    if (!dragging) return;
-    dragging = false;
-    var x = Math.min(sx, e.screenX);
-    var y = Math.min(sy, e.screenY);
-    var w = Math.abs(e.screenX - sx);
-    var h = Math.abs(e.screenY - sy);
-    if (w < minSize && h < minSize) {
-      document.title = 'toosmall:' + x + ',' + y;
-    } else {
-      document.title = JSON.stringify({x:x, y:y, width:w, height:h});
+      // Compute screen (global) coordinates for the info bar
+      var gx = Math.min(sx_screen, e.screenX);
+      var gy = Math.min(sy_screen, e.screenY);
+      var gw = Math.abs(e.screenX - sx_screen);
+      var gh = Math.abs(e.screenY - sy_screen);
+      bar.textContent = gw + ' x ' + gh + '  |  松开确认 · Esc 取消';
     }
-  });
 
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') document.title = 'cancelled';
-  });
+    document.addEventListener('mouseup', function(e) {
+      if (!dragging) return;
+      dragging = false;
+      var gx = Math.min(sx_screen, e.screenX);
+      var gy = Math.min(sy_screen, e.screenY);
+      var gw = Math.abs(e.screenX - sx_screen);
+      var gh = Math.abs(e.screenY - sy_screen);
+      if (gw < minSize && gh < minSize) {
+        document.title = 'toosmall';
+      } else {
+        document.title = JSON.stringify({x: gx, y: gy, width: gw, height: gh});
+      }
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') document.title = 'cancelled';
+    });
+  })();
 </script>
 </body>
 </html>`
 }
 
+/**
+ * Create a transparent window covering all displays, let the user drag-select
+ * a region, and return the selected bounds in global screen coordinates.
+ */
 function startRegionSelectionOnDisplay(): Promise<ScreenshotRegion | null> {
   return new Promise((resolve) => {
-    const cursorPoint = screen.getCursorScreenPoint()
-    const display = screen.getDisplayNearestPoint(cursorPoint)
-    const { x, y, width: dw, height: dh } = display.bounds
+    // Compute virtual desktop bounds to cover all monitors
+    const allDisplays = screen.getAllDisplays()
+    let minX = 0, minY = 0, maxX = 1, maxY = 1
+    for (const d of allDisplays) {
+      minX = Math.min(minX, d.bounds.x)
+      minY = Math.min(minY, d.bounds.y)
+      maxX = Math.max(maxX, d.bounds.x + d.bounds.width)
+      maxY = Math.max(maxY, d.bounds.y + d.bounds.height)
+    }
 
     const overlay = new BrowserWindow({
-      x,
-      y,
-      width: dw,
-      height: dh,
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY,
       transparent: true,
       frame: false,
       alwaysOnTop: true,
@@ -98,9 +119,10 @@ function startRegionSelectionOnDisplay(): Promise<ScreenshotRegion | null> {
       focusable: true,
       hasShadow: false,
       webPreferences: {
-        sandbox: false,             // kept false with CSP for defense-in-depth
-        contextIsolation: false,    // title-based IPC needs this; CSP mitigates
-        nodeIntegration: false
+        sandbox: false,
+        contextIsolation: false,
+        nodeIntegration: false,
+        zoomFactor: 1
       }
     })
 
@@ -116,17 +138,20 @@ function startRegionSelectionOnDisplay(): Promise<ScreenshotRegion | null> {
       clearTimeout(safetyTimer)
       overlay.removeAllListeners('page-title-updated')
       overlay.removeAllListeners('closed')
+      overlay.removeAllListeners('render-process-gone')
+      overlay.removeAllListeners('unresponsive')
       if (!overlay.isDestroyed()) overlay.close()
       resolve(region)
     }
 
-    const safetyTimer = setTimeout(() => {
-      done(null)
-    }, TIMEOUT_MS)
+    const safetyTimer = setTimeout(() => { done(null) }, TIMEOUT_MS)
+
+    // Cleanup on renderer crash (events are on webContents, not BrowserWindow)
+    overlay.webContents.on('render-process-gone', () => { done(null) })
+    overlay.on('unresponsive', () => { done(null) })
 
     overlay.on('page-title-updated', (_event, title) => {
-      if (title === 'cancelled') { done(null); return }
-      if (title.startsWith('toosmall:')) { done(null); return }
+      if (title === 'cancelled' || title === 'toosmall') { done(null); return }
       try {
         const r = JSON.parse(title) as ScreenshotRegion
         if (r && typeof r.width === 'number' && r.width >= 8) {
@@ -140,14 +165,13 @@ function startRegionSelectionOnDisplay(): Promise<ScreenshotRegion | null> {
     overlay.on('closed', () => { done(null) })
 
     overlay.loadURL(
-      'data:text/html;charset=utf-8,' + encodeURIComponent(buildOverlayHTML(x, y))
+      'data:text/html;charset=utf-8,' + encodeURIComponent(buildOverlayHTML())
     )
   })
 }
 
 ipcMain.handle('startRegionSelection', async () => {
   if (selecting) return null
-
   selecting = true
   try {
     const region = await startRegionSelectionOnDisplay()
@@ -177,5 +201,4 @@ ipcMain.handle('startRegionSelection', async () => {
   }
 })
 
-// Also export for internal use by shortcuts (direct call, not IPC)
 export { startRegionSelectionOnDisplay as startRegionSelection }
