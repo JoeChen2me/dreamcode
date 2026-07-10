@@ -1,7 +1,6 @@
 import { BrowserWindow, screen, ipcMain } from 'electron'
 import type { ScreenshotRegion } from './config'
-import { saveConfig } from './config'
-import { settings } from './settings'
+import { settings, persistConfig } from './settings'
 
 let selecting = false
 
@@ -177,19 +176,7 @@ ipcMain.handle('startRegionSelection', async () => {
     const region = await startRegionSelectionOnDisplay()
     if (region) {
       Object.assign(settings, { screenshotRegion: region })
-      saveConfig({
-        apiProvider: settings.apiProvider,
-        apiBaseURL: settings.apiBaseURL,
-        apiKey: settings.apiKey,
-        extraHeaders: settings.extraHeaders,
-        model: settings.model,
-        codeLanguage: settings.codeLanguage,
-        customPrompt: settings.customPrompt,
-        proxyUrl: settings.proxyUrl,
-        autoCheckUpdate: settings.autoCheckUpdate,
-        screenshotMode: settings.screenshotMode,
-        screenshotRegion: settings.screenshotRegion
-      })
+      persistConfig()
       const mainWindow = global.mainWindow
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('region-updated', region)

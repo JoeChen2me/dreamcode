@@ -4,7 +4,7 @@ import type { ModelMessage } from 'ai'
 import { takeScreenshot } from './take-screenshot'
 import { getSolutionStream, getFollowUpStream, getGeneralStream } from './ai'
 import { state } from './state'
-import { settings } from './settings'
+import { settings, persistConfig } from './settings'
 import { startRegionSelection } from './region-overlay'
 
 /**
@@ -600,6 +600,7 @@ const callbacks: Record<string, () => void> = {
     const region = await startRegionSelection()
     if (region) {
       settings.screenshotRegion = region
+      persistConfig()
       mainWindow.webContents.send('region-updated', region)
     }
   }

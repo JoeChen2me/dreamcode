@@ -18,15 +18,8 @@ const MUTABLE_FIELDS: (keyof AppSettings)[] = [
   'screenshotMode', 'screenshotRegion', 'opacity'
 ]
 
-ipcMain.handle('updateAppSettings', (_event, _settings: Record<string, unknown>) => {
-  // Only copy known fields — prevent arbitrary property injection
-  const filtered: Partial<AppSettings> = {}
-  for (const key of MUTABLE_FIELDS) {
-    if (key in _settings) {
-      ;(filtered as Record<string, unknown>)[key] = _settings[key]
-    }
-  }
-  Object.assign(settings, filtered)
+/** Build an AppConfig snapshot from the current in-memory settings and persist to disk. */
+export function persistConfig(): void {
   const configFields: AppConfig = {
     apiProvider: settings.apiProvider,
     apiBaseURL: settings.apiBaseURL,
@@ -41,6 +34,18 @@ ipcMain.handle('updateAppSettings', (_event, _settings: Record<string, unknown>)
     screenshotRegion: settings.screenshotRegion
   }
   saveConfig(configFields)
+}
+
+ipcMain.handle('updateAppSettings', (_event, _settings: Record<string, unknown>) => {
+  // Only copy known fields — prevent arbitrary property injection
+  const filtered: Partial<AppSettings> = {}
+  for (const key of MUTABLE_FIELDS) {
+    if (key in _settings) {
+      ;(filtered as Record<string, unknown>)[key] = _settings[key]
+    }
+  }
+  Object.assign(settings, filtered)
+  persistConfig()
 })
 
 export type AppSettings = AppConfig & {
